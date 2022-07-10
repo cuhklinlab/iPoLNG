@@ -10,7 +10,9 @@ This package relies on [PyTorch](https://pytorch.org/) to run. Please install th
 
 Please install the ``iPoLNG`` package using the following command in the command line:
 
-> pip install iPoLNG
+```{Shell}
+pip install iPoLNG
+```
 
 ## Usage
 
