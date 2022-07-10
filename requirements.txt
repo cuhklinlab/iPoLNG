@@ -1,0 +1,6 @@
+numpy==1.21.0
+pyro==3.16
+pyro_ppl==1.8.1
+statsmodels==0.12.2
+torch==1.11.0+cu113
+tqdm==4.62.3

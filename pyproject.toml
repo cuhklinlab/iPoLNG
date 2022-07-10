@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "iPoLNG"
+version = "0.0.1"
+authors = [
+  { name="Wenyu Zhang", email="wyzhangxii@link.cuhk.edu.hk" },
+]
+description = "An unsupervised model for the integrative analysis of single-cell multiomics data, coded in the deep universal probabilistic program Pyro"
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = ["single-cell", "multiomics", "data integration"]
+license = { file="LICENSE" }
+dependencies = [
+    "numpy",
+    "pyro",
+    "pyro_ppl",
+    "statsmodels",
+    "tqdm"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/cuhklinlab/iPoLNG"
+"Bug Tracker" = "https://github.com/cuhklinlab/iPoLNG/issues"
