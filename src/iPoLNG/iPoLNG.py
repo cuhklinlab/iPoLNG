@@ -7,6 +7,8 @@ from pyro.infer import SVI, TraceMeanField_ELBO
 import time
 from tqdm import trange
 from statsmodels.regression.quantile_regression import QuantReg
+import pkg_resources
+import os
 
 def get_params_iPoLNG(keys):
     Thetas_est = {k: torch.nn.functional.softmax(pyro.param("logTheta%s_loc" % str(i+1)).detach().cpu(),-1).numpy() for i,k in enumerate(keys)}
@@ -265,3 +267,8 @@ class iPoLNG:
         pyro.clear_param_store()
         return(res)
         
+def load_example_data():
+    DATA_PATH = pkg_resources.resource_filename(__name__)
+    W1=np.load(os.path.join(DATA_PATH,"W1.npy"))
+    W2=np.load(os.path.join(DATA_PATH,"W2.npy"))
+    return dict(W1=W1,W2=W2)

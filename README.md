@@ -21,9 +21,7 @@ import iPoLNG
 import torch
 torch.set_default_tensor_type("torch.cuda.FloatTensor" if torch.cuda.is_available() else "torch.FloatTensor")
 # torch.set_default_tensor_type("torch.FloatTensor")
-dna = torch.tensor(sc.read("./src/iPoLNG/10xPBMC3k_DNA20k.mtx").X.T.toarray())
-rna = torch.tensor(sc.read("./src/iPoLNG/10xPBMC3k_RNA5k.mtx").X.T.toarray())
-W = dict(RNA=rna, ATAC=dna)
+W = iPoLNG.load_example_data()
 model = iPoLNG.iPoLNG(W, num_topics=20, num_epochs=300)
 result = model.Run(warmup_epochs=300, verbose=True)
 ```
