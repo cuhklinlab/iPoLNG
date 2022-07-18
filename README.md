@@ -4,7 +4,7 @@ An unsupervised model for the integrative analysis of single-cell multiomics dat
 
 ## Dependency
 
-This package relies on [PyTorch](https://pytorch.org/) to run. Please install the correct CUDA version that matches your Operating System on the [official website](https://pytorch.org/get-started/locally/).
+This package relies on [PyTorch](https://pytorch.org/) to run. Please install the correct CUDA version that matches your Operating System on [the official website](https://pytorch.org/get-started/locally/). The exact version of the dependent packages can be found in ``requirements.txt``.
 
 ## Installation
 
@@ -19,7 +19,7 @@ pip install iPoLNG
 ```{Python}
 import iPoLNG
 import torch
-torch.set_default_tensor_type("torch.cuda.FloatTensor")
+torch.set_default_tensor_type("torch.cuda.FloatTensor" if torch.cuda.is_available() else "torch.FloatTensor")
 # torch.set_default_tensor_type("torch.FloatTensor")
 dna = torch.tensor(sc.read("./src/iPoLNG/10xPBMC3k_DNA20k.mtx").X.T.toarray())
 rna = torch.tensor(sc.read("./src/iPoLNG/10xPBMC3k_RNA5k.mtx").X.T.toarray())
