@@ -163,7 +163,7 @@ class iPoLNG_helper:
                         pyro.param("alpha%s_ik" % str(i+1), lambda: self.alpha_init*torch.ones(I,self.num_topics),constraint=dist.constraints.positive)
                     )
                     betas_k_q.append(
-                        pyro.param("beta%s_ik" % str(i+1), self.alpha_init*torch.ones(I,self.num_topics),constraint=dist.constraints.positive)
+                        pyro.param("beta%s_ik" % str(i+1), self.beta_init*torch.ones(I,self.num_topics),constraint=dist.constraints.positive)
                     )
                 pyro.sample("L%s" % str(i+1), dist.Gamma(alphas_k_q[i], betas_k_q[i]).to_event(1))            
             
