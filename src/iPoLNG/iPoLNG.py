@@ -7,7 +7,7 @@ from pyro.infer import SVI, TraceMeanField_ELBO
 import time
 from tqdm import trange
 from statsmodels.regression.quantile_regression import QuantReg
-import pkg_resources
+from importlib_resources import files
 import os
 
 def get_params_iPoLNG(keys):
@@ -170,11 +170,14 @@ class iPoLNG_helper:
                 pyro.sample("L%s" % str(i+1), dist.Gamma(alphas_k_q[i], betas_k_q[i]).to_event(1))            
             
 class iPoLNG:
-    def __init__(self,W,num_topics,alpha_k=1,num_epochs=3000,lr=0.1) -> None:
+    def __init__(self,W,num_topics,alpha_k=1,integrated_epochs=3000,warmup_epochs=3000,lr=0.1,seed=42,verbose=True) -> None:
         self.W = W
         self.num_topics = num_topics
-        self.num_epochs = num_epochs
+        self.integrated_epochs = integrated_epochs
+        self.warmup_epochs = warmup_epochs
         self.lr = lr
+        self.seed = seed
+        self.verbose = verbose
         # define hyperparameters that control the prior
         self.alpha_k = alpha_k
         self.beta_k =  (alpha_k+1)/self.num_topics
@@ -184,9 +187,9 @@ class iPoLNG:
         self.mean_init = torch.tensor(0.0)
         self.sigma_init = torch.tensor(0.1)
 
-    def Run(self,warmup_epochs=3000,verbose=True):
+    def Run(self):
+        torch.manual_seed(self.seed)
         Is = [Wi.shape[0] for Wi in self.W.values()]
-        Js = [Wi.shape[1] for Wi in self.W.values()]
         # make sure the number of samples from different data modalities are the same 
         assert len(np.unique(Is))==1
         I = Is[0]
@@ -197,18 +200,18 @@ class iPoLNG:
         svi = SVI(PoLNGmodel.model, PoLNGmodel.guide, opt, loss=TraceMeanField_ELBO())        
         logTheta_loc, logTheta_scale, alphas_ik, betas_ik, losseses = [],[],[],[],[]
         for key, Wi in self.W.items():
-            print("Run PoLNG for data modality: ", key)
+            print('Run PoLNG for data modality {} ...'.format(key))
             pyro.clear_param_store()
             losses = []
-            bar = range(warmup_epochs)
-            if verbose:
-                bar = trange(warmup_epochs)
-            for epoch in bar:
+            bar = range(self.warmup_epochs)
+            if self.verbose:
+                bar = trange(self.warmup_epochs)
+            for _ in bar:
                 running_loss = 0.0
                 loss = svi.step(Wi)
                 losses.append(loss)
                 running_loss += loss / Wi.size(0)
-                if verbose:
+                if self.verbose:
                     bar.set_postfix(epoch_loss='{:.2e}'.format(running_loss))
                 # clip the parameters to avoid frequent numerical errors
                 clip_params_PoLNG()   
@@ -232,9 +235,11 @@ class iPoLNG:
         # perform quantile regression to get hyperparameters "alpha0s" that control the noise levels of data modalities
         self.alpha0s = [1 / QuantReg(Ls_est_var[i].reshape(-1),Ls_est_mean[i].reshape(-1,1)**2).fit(q=0.9).params[0] for i in range(len(alphas_ik))]
         for key, alpha0 in zip(self.W.keys(),self.alpha0s):
-            print("alpha0 for data modality ",key,": ", alpha0)
+            print('alpha0 for data modality {}: {}'.format(key, alpha0))
         # run iPoLNG using the estimated alpha0s and initial values
         pyro.clear_param_store()
+        print("Run iPoLNG...")
+
         alpha0_max_pos = np.argmax(self.alpha0s)
         init = dict({
             "logTheta_loc": logTheta_loc[alpha0_max_pos], 
@@ -244,16 +249,16 @@ class iPoLNG:
         })
         iPoLNGmodel = iPoLNG_helper(self.num_topics,alpha0s=self.alpha0s,alpha_k=self.alpha_k,init=init)
         svi = SVI(iPoLNGmodel.model, iPoLNGmodel.guide, opt, loss=TraceMeanField_ELBO())
-        bar = range(self.num_epochs)
-        if verbose:
-            bar = trange(self.num_epochs)
+        bar = range(self.integrated_epochs)
+        if self.verbose:
+            bar = trange(self.integrated_epochs)
         losses = []
-        for epoch in bar:
+        for _ in bar:
             running_loss = 0.0
             loss = svi.step(self.W)
             losses.append(loss)
             running_loss += loss / I
-            if verbose:
+            if self.verbose:
                 bar.set_postfix(epoch_loss='{:.2e}'.format(running_loss))
             # clip the parameters to avoid frequent numerical errors
             clip_params_iPoLNG(len(self.W))
@@ -268,7 +273,7 @@ class iPoLNG:
         return(res)
         
 def load_example_data():
-    DATA_PATH = pkg_resources.resource_filename(__name__)
-    W1=np.load(os.path.join(DATA_PATH,"W1.npy"))
-    W2=np.load(os.path.join(DATA_PATH,"W2.npy"))
+    DATA_PATH = files('iPoLNG')
+    W1=torch.tensor(np.load(os.path.join(DATA_PATH,"W1.npy")))
+    W2=torch.tensor(np.load(os.path.join(DATA_PATH,"W2.npy")))
     return dict(W1=W1,W2=W2)

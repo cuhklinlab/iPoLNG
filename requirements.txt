@@ -1,3 +1,4 @@
+importlib_resources==5.8.0
 numpy==1.21.0
 pyro_ppl==1.8.1
 statsmodels==0.12.2
