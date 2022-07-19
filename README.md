@@ -59,7 +59,7 @@ result = model.Run()
 
 ``alpha0s``: a dictionary consisting of the hyperparameters that control the levels of noise across different data modalities in the iPoLNG model.
 
-Please refer to the vignette for the results of the example code.
+Please refer to [the vignette](https://github.com/cuhklinlab/iPoLNG/blob/main/vignette/vignette.ipynb) for the outputs of the example code.
 
 ## Reference
 
