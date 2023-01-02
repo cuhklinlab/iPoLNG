@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "iPoLNG"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
   { name="Wenyu Zhang", email="wyzhangxii@link.cuhk.edu.hk" },
 ]

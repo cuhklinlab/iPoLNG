@@ -10,6 +10,13 @@ from statsmodels.regression.quantile_regression import QuantReg
 from importlib_resources import files
 import os
 
+def get_params_PoLNG():
+    Theta1_est = torch.nn.functional.softmax(pyro.param("logTheta1_loc").detach().cpu(),-1).numpy()
+    alpha_ik = pyro.param("alpha_ik").detach().cpu().numpy() 
+    beta_ik = pyro.param("beta_ik").detach().cpu().numpy()
+    L_est = np.maximum((alpha_ik-1)/beta_ik,0)
+    return dict({"L_est":L_est, "Theta1_est":Theta1_est})
+
 def get_params_iPoLNG(keys):
     Thetas_est = {k: torch.nn.functional.softmax(pyro.param("logTheta%s_loc" % str(i+1)).detach().cpu(),-1).numpy() for i,k in enumerate(keys)}
     alpha_ik = pyro.param("alpha0_ik").detach().cpu().numpy() 
@@ -30,7 +37,7 @@ def clip_params_iPoLNG(M):
         pyro.param("beta%s_ik" % str(i+1)).data.clamp_(min=1e-3)
          
                 
-class PoLNG:
+class PoLNG_helper:
     def __init__(self,num_topics) -> None:
         self.num_topics = num_topics
         # define hyperparameters that control the prior
@@ -74,6 +81,45 @@ class PoLNG:
             beta_k_q = pyro.param("beta_ik", lambda: self.beta_init*torch.ones(I,self.num_topics),constraint=dist.constraints.positive)
             pyro.sample("L", dist.Gamma(alpha_k_q, beta_k_q).to_event(1))
                 
+class PoLNG:
+    def __init__(self,W,num_topics,num_epochs=3000,lr=0.1,seed=42,verbose=True) -> None:
+        self.W = W
+        self.num_topics = num_topics
+        self.num_epochs = num_epochs
+        self.lr = lr
+        self.seed = seed
+        self.verbose = verbose
+
+    def Run(self):
+        torch.manual_seed(self.seed)
+        I = self.W.shape[0]
+        opt = pyro.optim.Adam({"lr": self.lr, "betas": (0.90, 0.999)})
+        starttime = time.time()
+        # run PoLNG on single data modality
+        PoLNGmodel = PoLNG_helper(self.num_topics) 
+        svi = SVI(PoLNGmodel.model, PoLNGmodel.guide, opt, loss=TraceMeanField_ELBO())        
+        # logTheta_loc, logTheta_scale, alphas_ik, betas_ik, losseses = [],[],[],[],[]
+        print('Run PoLNG ...')
+        pyro.clear_param_store()
+        losses = []
+        bar = range(self.num_epochs)
+        if self.verbose:
+            bar = trange(self.num_epochs)
+        for _ in bar:
+            running_loss = 0.0
+            loss = svi.step(self.W)
+            losses.append(loss)
+            running_loss += loss / self.W.size(0)
+            if self.verbose:
+                bar.set_postfix(epoch_loss='{:.2e}'.format(running_loss))
+            # clip the parameters to avoid frequent numerical errors
+            clip_params_PoLNG()   
+        endtime = time.time()
+        res = get_params_PoLNG()
+        res['time'] = endtime - starttime 
+        res['loss'] = losses
+        pyro.clear_param_store()
+        return(res)
 
 class iPoLNG_helper:
     def __init__(self,num_topics,alpha0s,alpha_k=1,init=None) -> None:
@@ -196,7 +242,7 @@ class iPoLNG:
         opt = pyro.optim.Adam({"lr": self.lr, "betas": (0.90, 0.999)})
         starttime = time.time()
         # run PoLNG on single data modality
-        PoLNGmodel = PoLNG(self.num_topics) 
+        PoLNGmodel = PoLNG_helper(self.num_topics) 
         svi = SVI(PoLNGmodel.model, PoLNGmodel.guide, opt, loss=TraceMeanField_ELBO())        
         logTheta_loc, logTheta_scale, alphas_ik, betas_ik, losseses = [],[],[],[],[]
         for key, Wi in self.W.items():
