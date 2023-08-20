@@ -30,7 +30,7 @@ The main function in this package is ``iPoLNG.iPoLNG``. The input consists of th
 
 ``lr``: The learning rate in the stochastic variational inference algorithm. The default value is ``0.1``. You may adjust it according to the characteristics of the data.
 
-``seed``: The random seed used in the iPoLNG model. The default value is ``42``.
+``seed``: The random seed used in the iPoLNG model. The default value is ``42``. 
 
 ``verbose``: A boolean value. Set to ``True`` if you would like to show the learning progress in the model. The default value is ``True``.
 
@@ -63,7 +63,7 @@ Please refer to [the vignette](https://github.com/cuhklinlab/iPoLNG/blob/main/vi
 
 ## Reference
 
-To be completed.
+Zhang W and Lin Z (2023) iPoLNG — An unsupervised model for the integrative analysis of single-cell multiomics data. Front. Genet. 14:998504. doi: 10.3389/fgene.2023.998504
 
 ## Bug reports
 
