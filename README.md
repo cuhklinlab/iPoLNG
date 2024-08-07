@@ -1,6 +1,8 @@
 # iPoLNG
 
-This is an unsupervised model for the integrative analysis of single-cell multiomics data, coded in the deep universal probabilistic program [Pyro](https://pyro.ai/).
+This is an unsupervised model for the integrative analysis of single-cell multiomics data, coded in the deep universal probabilistic program [Pyro](https://pyro.ai/). The overview of the model for 2 modalities is shown below.
+
+![iPoLNG overview](iPoLNG_overview_2modalities.jpg)
 
 ## Dependency
 
@@ -24,11 +26,11 @@ The main function in this package is ``iPoLNG.iPoLNG``. The input consists of th
 
 ``alpha_k``: The shape parameter for the inverse gamma distribution in the prior. The default value is ``1``.
 
-``integrated_epochs``: The number of epochs to run in the stochastic variational inference algorithm for iPoLNG. The default value is ``3000``.
+``integrated_epochs``: The number of epochs to run in the stochastic variational inference algorithm for iPoLNG. The default value is ``3000``. You may adjust it according to the characteristics of the data.
 
-``warmup_epochs``: The number of epochs to run in the stochastic variational inference algorithm for PoLNG (as a warm-up step). The default value is ``3000``.
+``warmup_epochs``: The number of epochs to run in the stochastic variational inference algorithm for PoLNG (as a warm-up step). The default value is ``3000``. You may adjust it according to the characteristics of the data.
 
-``lr``: The learning rate in the stochastic variational inference algorithm. The default value is ``0.1``. You may adjust it according to the characteristics of the data.
+``lr``: The learning rate in the stochastic variational inference algorithm. The default value is ``0.1``. You may adjust it according to the characteristics of the data. If the data is quite sparse, the "lr" should be smaller, e.g. ``0.01`` or ``0.001``. 
 
 ``seed``: The random seed used in the iPoLNG model. The default value is ``42``. 
 
@@ -59,7 +61,7 @@ result = model.Run()
 
 ``alpha0s``: a dictionary consisting of the hyperparameters that control the levels of noise across different data modalities in the iPoLNG model.
 
-Please refer to [the vignette](https://github.com/cuhklinlab/iPoLNG/blob/main/vignette/vignette.ipynb) for the outputs of the example code.
+Please refer to [the vignette](https://github.com/cuhklinlab/iPoLNG/blob/main/vignette/vignette.ipynb) for the analysis for the outputs of the example code.
 
 ## Reference
 
