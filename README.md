@@ -30,7 +30,7 @@ The main function in this package is ``iPoLNG.iPoLNG``. The input consists of th
 
 ``warmup_epochs``: The number of epochs to run in the stochastic variational inference algorithm for PoLNG (as a warm-up step). The default value is ``3000``. You may adjust it according to the characteristics of the data.
 
-``lr``: The learning rate in the stochastic variational inference algorithm. The default value is ``0.1``. You may adjust it according to the characteristics of the data. If the data is quite sparse, the "lr" should be smaller, e.g. ``0.01`` or ``0.001``. 
+``lr``: The learning rate in the stochastic variational inference algorithm. The default value is ``0.1``. You may adjust it according to the characteristics of the data. If the data is quite sparse, ``lr`` should be smaller, e.g. ``0.01`` or ``0.001``. 
 
 ``seed``: The random seed used in the iPoLNG model. The default value is ``42``. 
 
